@@ -13,6 +13,11 @@
 
     function fetchValues() {
         let values = document.querySelectorAll(".like-button-renderer > span:nth-of-type(odd) button span");
+
+        if (values.length === 0) {
+            return null;
+        }
+
         let likes = parseInt(values[0].textContent.replace(/\s+/g, ""));
         let dislikes = parseInt(values[1].textContent.replace(/\s+/g, ""));
 
@@ -25,5 +30,21 @@
         };
     }
 
-    console.log(fetchValues());
+    function displayRatioAndSaveValues() {
+        let values = fetchValues();
+        if (values !== null) {
+            console.log("values:");
+            console.log(values);
+
+            let ratio = document.createElement("span");
+            ratio.appendChild(document.createTextNode(values.ratio.toFixed(2)));
+            document.querySelector(".like-button-renderer").appendChild(ratio);
+        }
+    }
+
+    displayRatioAndSaveValues();
+
+    window.addEventListener("spfdone", function(e) {
+        displayRatioAndSaveValues();
+    });
 })();
