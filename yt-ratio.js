@@ -36,8 +36,18 @@
             console.log("values:");
             console.log(values);
 
+            let ratioValue = document.createElement("span");
+            ratioValue.classList.add("yt-uix-button-content");
+            ratioValue.appendChild(document.createTextNode(values.ratio.toFixed(2)));
+
+            let button = document.createElement("button");
+            button.classList.add("yt-uix-button", "yt-uix-button-opacity");
+            button.appendChild(ratioValue);
+
             let ratio = document.createElement("span");
-            ratio.appendChild(document.createTextNode(values.ratio.toFixed(2)));
+            ratio.appendChild(button);
+            ratio.setAttribute("title", "Ratio likes / dislikes");
+
             document.querySelector(".like-button-renderer").appendChild(ratio);
         }
     }
