@@ -5,7 +5,7 @@
 // @description  Stores visited video likes / dislikes ratios and creates browsable rankings.
 // @author       Flagoul
 // @match        https://www.youtube.com/*
-// @grant        none
+// @grant        GM_addStyle
 // ==/UserScript==
 
 (function() {
@@ -36,13 +36,22 @@
             console.log("values:");
             console.log(values);
 
+            GM_addStyle(`
+                .ratio-icon:before {
+                    margin-right: 4px !important;
+                    opacity: 1 !important;
+                    margin-bottom: 3px !important;
+                }
+            `);
+
             let ratioValue = document.createElement("span");
             ratioValue.classList.add("yt-uix-button-content");
             ratioValue.appendChild(document.createTextNode(values.ratio.toFixed(2)));
 
             let button = document.createElement("button");
-            button.classList.add("yt-uix-button", "yt-uix-button-opacity");
+            button.classList.add("yt-uix-button", "yt-uix-button-opacity", "yt-ui-menu-item", "has-icon", "action-panel-trigger-stats", "ratio-icon");
             button.appendChild(ratioValue);
+            button.style.width = "inherit";
 
             let ratio = document.createElement("span");
             ratio.appendChild(button);
