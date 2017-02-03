@@ -86,11 +86,13 @@
     /**
     * Saves the values of the current video in the local storage and computes the ranking of the videos.
     *
-    * When a ranking has too many videos, removes videos that are low-ranked in this ranking.
+    * Fetches the records in the local storage, adds the current video to it, computes rankings and then saves the records. During the computing, if a ranking has too many
+    * videos, removes videos that are the bottom of this ranking. The videos removed will not be saved in the local storage (it includes current video if it would be too low
+    * in the ranking).
     *
     * @param {Object} values - The values retrieved from the current video.
     * @param {Number} maxPerRanking - The maximum number of videos per ranking.
-    * @return {Object} The saved records.
+    * @return {Object} The computed rankings.
     */
     function saveValuesAndComputeRankings(values, maxPerRanking) {
         let records = JSON.parse(localStorage.getItem(LS_KEY));
@@ -108,9 +110,9 @@
             // if the ranking is too big, truncate it and delete all low-ranked videos records
             let ranking = rankings[i];
             if (ranking.length > maxPerRanking) {
-                let toDelete = ranking[i].slice(maxPerRanking);
+                let toDelete = ranking.slice(maxPerRanking);
                 for (let j = 0; j < toDelete.length; ++j) {
-                    delete records[ranking[j].id];
+                    delete records[toDelete[j].id];
                 }
                 rankings[i] = ranking.slice(0, maxPerRanking);
             }
@@ -179,8 +181,8 @@
         if (values !== null) {
             displayRatio(values.ratio);
             let rankings = saveValuesAndComputeRankings(values, RANKING_MAX_VIDEOS);
-            console.log("Rankings:");
 
+            console.log("Rankings:");
             let lower = RANKING_LOWEST_VIEW_COUNT;
             let upper = RANKING_LOWEST_VIEW_COUNT;
             for (let i = 0; i < rankings.length; ++i) {
