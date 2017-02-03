@@ -22,7 +22,7 @@
     * - dislikes: the number of dislikes on the video
     * - ratio: the raio of likes / dislikes of the video
     *
-    * @return {Object} an object as described above. null if the video contains no likes / dislikes.
+    * @return {Object} An object as described above. null if the video contains no likes / dislikes.
     */
     function retrieveValues() {
         let values = document.querySelectorAll(".like-button-renderer > span:nth-of-type(odd) button span");
@@ -35,10 +35,10 @@
         let id = document.location.href.match(".*?v=([^&]*)")[1];
         let title = document.querySelector("#eow-title").title;
 
-        let viewCount = parseInt(document.querySelector(".watch-view-count").textContent.split(/\s+/).slice(0, -1).join(""));
+        let viewCount = parseInt(document.querySelector(".watch-view-count").textContent.split(/[\s,]+/).slice(0, -1).join(""));
 
-        let likes = parseInt(values[0].textContent.replace(/\s+/g, ""));
-        let dislikes = parseInt(values[1].textContent.replace(/\s+/g, ""));
+        let likes = parseInt(values[0].textContent.replace(/[\s,]+/g, ""));
+        let dislikes = parseInt(values[1].textContent.replace(/[\s,]+/g, ""));
 
         return {
             "id": id,
@@ -80,35 +80,106 @@
         document.querySelector(".like-button-renderer").appendChild(ratioSpan);
     }
 
-    function displayRatioAndSaveValues() {
+    /**
+    * Saves the values of the current video in the local storage. If the number of records stored is bigger than a given maximum value, removes oldest record until
+    * the number of records respects this maximum value.
+    *
+    * @param {Object} values - The values retrieved from the current video.
+    * @param {Number} maxNumberOfRecords - The maximum number of records to store.
+    * @return {Object} The saved records.
+    */
+    function saveValues(values, maxNumberOfRecords) {
+        if (maxNumberOfRecords < 0) {
+            throw "Max number of records can't be negative.";
+        }
+
+        let records = JSON.parse(localStorage.getItem(LS_KEY));
+        if (records === null) {
+            records = {};
+        }
+
+        delete records[values.id];
+        records[values.id] = values;
+
+        // FIXME use rankings later and remove low-ranked ones
+        // delete old records until their number is small enough
+        while (Object.keys(records).length - maxNumberOfRecords > 0) {
+            delete records[Object.keys(records)[0]];
+        }
+
+        localStorage.setItem(LS_KEY, JSON.stringify(records));
+
+        return records;
+    }
+
+    function buildRankings(records, from, step) {
+        if (from <= 0) {
+            throw "Smallest view count in rankings can't be <= 0.";
+        }
+
+        if (step <= 0) {
+            throw "Step between rankings can't be <= 0.";
+        }
+
+        let rankings = [];
+
+        for (let key in records) {
+            if (records.hasOwnProperty(key)) {
+                let record = records[key];
+
+                if (record.viewCount >= from) {
+
+                    let rankingFound = false;
+                    let lower = from;
+                    let upper = from;
+
+                    for (let rankingNumber = 0; !rankingFound; ++rankingNumber) {
+                        lower = upper;
+                        upper = lower * step;
+
+                        if (rankingNumber >= rankings.length) {
+                            rankings.push([]);
+                        }
+
+                        if (record.viewCount >= lower && record.viewCount < upper) {
+                            rankings[rankingNumber].push(record);
+                            rankingFound = true;
+                        }
+                    }
+                }
+            }
+        }
+        return rankings;
+    }
+
+    function displayRankings() {
+        // TODO
+    }
+
+    function doVideoRelatedActions() {
         let values = retrieveValues();
 
         // the video is worth registering (has likes and dislikes)
         if (values !== null) {
             displayRatio(values.ratio);
-
-            let storedValues = JSON.parse(localStorage.getItem(LS_KEY));
-            if (storedValues === null) {
-                storedValues = {};
-            }
-
-            storedValues[values.id] = values;
+            let records = saveValues(values, 5);
 
             // FIXME remove later
-            console.log("Videos values stored:");
-            for (let key in storedValues) {
-                if (storedValues.hasOwnProperty(key)) {
-                    console.log(key, storedValues[key]);
+            console.log("Videos records:");
+            for (let key in records) {
+                if (records.hasOwnProperty(key)) {
+                    console.log(records[key]);
                 }
             }
-
-            localStorage.setItem(LS_KEY, JSON.stringify(storedValues));
+            console.log("Rankings:");
+            let rankings = buildRankings(records, 100, 10);
+            console.log(rankings);
         }
     }
 
-    displayRatioAndSaveValues();
+    doVideoRelatedActions();
 
     window.addEventListener("spfdone", function(e) {
-        displayRatioAndSaveValues();
+        doVideoRelatedActions();
     });
 })();
