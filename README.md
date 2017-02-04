@@ -15,6 +15,7 @@ concerning videos with a smaller view count.
 # Overview of the features
 
 The script adds the following elements:
+
 - When a video has likes and dislikes shown, the ratio is displayed and a new button is added.
 ![ratio](https://cloud.githubusercontent.com/assets/2306585/22619215/4091ea66-eaf0-11e6-8377-5b29ba1e5da9.png)
 
