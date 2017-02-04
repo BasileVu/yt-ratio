@@ -12,7 +12,7 @@ concerning videos with a smaller view count.
 
 *Warning: if you intend to use this script, keep in mind that this project was done mostly for fun, does not support all languages on youtube (doesn't work with japanese / vietnamese display for example) and may not be up to date with the changes done on Youtube's part.*
 
-# Overview of the features
+## Overview of the features
 
 The script adds the following elements:
 
@@ -24,7 +24,7 @@ The script adds the following elements:
 
 ![rankings](https://cloud.githubusercontent.com/assets/2306585/22619212/1f98bb8c-eaf0-11e6-9f28-a5e24fc56d7c.png)
 
-# Installation
+## Installation
 
 For this step, we will use the extension `TamperMonkey`. Although untested, it can probably work on `GreaseMonkey` as well.
 

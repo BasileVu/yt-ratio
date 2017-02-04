@@ -18,6 +18,12 @@
     const RANKING_MAX_VIDEOS = 50; // the step (as a factor) between each ranking
 
 
+    /**
+    * Retrieves the document-related coordinates (top and left) of an element.
+    *
+    * @param {Object} e - The element whose coordinates are wanted.
+    * @return {Object} The coordinates of the element, relative to the top and left of the document. The object has the "top" and "left" attributes.
+    */
     function getCoords(e) {
         let box = e.getBoundingClientRect();
 
@@ -116,7 +122,7 @@
     *
     * @param {Object} values - The values retrieved from the current video.
     * @param {Number} maxPerRanking - The maximum number of videos per ranking.
-    * @return {Object} The computed rankings.
+    * @return {Object} The computed rankings. @see {@link computeRankings} for the format of the rankings.
     */
     function saveValuesAndComputeRankings(values, maxPerRanking) {
         let records = JSON.parse(localStorage.getItem(LS_KEY));
@@ -147,6 +153,25 @@
         return rankings;
     }
 
+    /**
+    * Computes the rankings based on values stored. In a ranking, the videos are sorted by ratio (bigger first). A ranking
+    * regroups all the video records whose view count is in a given range (for exaple between 10000 and 100000 views).
+    *
+    * The rankings are generated using two values: from how many views to begin building rankings and the step (as a factor) between rankings.
+    * For example, if the "from" value is set to 100 and step to 10, the rankings will be the following: ranking for 100-1000 views,
+    * 1000-10000 views, 10000-100000 views and so on. If we use a step of 100 instead, the ranking will be 100-10000, 10000-1000000 and so on.
+    * The rankings are generated according to the view count of a given video. If a video would belong to a ranking that doesn't exist, it is created.
+    *
+    * The generated rankings is a list of ranking, each being an object having the following fields:
+    * - lower, the lowest view count a video can have to be in the ranking (inclusive bound),
+    * - upper, the biggest view count a video can have to be in the ranking (exclusive bound),
+    * - values, the video records sorted by ratio.
+    *
+    * @param {Object} records - The records from which the rankings will be built.
+    * @param {Number} from - From where to strat building rankings. Videos having view count below that point will not be considered.
+    * @param {Number} step - The step between rankings (as a factor of multiplication).
+    * @return {Object} The computed rankings.
+    */
     function computeRankings(records, from, step) {
         if (from <= 0) {
             throw "Smallest view count in rankings can't be <= 0.";
@@ -198,6 +223,12 @@
         return rankings;
     }
 
+    /**
+    * Displays the rankings generated on button click.
+    *
+    * @param {Object} rankings - The rankings to display.
+    * @param {Object} button - The button that will open the ranking display.
+    */
     function displayRankings(rankings, button) {
         let availableRect = document.querySelector("#watch-headline-title").getBoundingClientRect();
         let width = availableRect.right - availableRect.left;
@@ -238,6 +269,12 @@
         document.querySelector("body").append(rankingsContainer);
     }
 
+    /**
+    * Builds the element for a ranking: its title, headers, the videos with their position and ratio.
+    *
+    * @param {Object} container - The element that will contain the element built.
+    * @param {Object} ranking - The ranking and its entries that will be used for the display.
+    */
     function buildList(container, ranking) {
         let title = document.createElement("h2");
         title.style.borderTop = "1px solid #e2e2e2";
@@ -311,6 +348,9 @@
         container.append(ul);
     }
 
+    /**
+    * Actions to do when a video is loaded. The actions will be executed only of the videohas likes and dislikes displayed.
+    */
     function doVideoRelatedActions() {
         let values = retrieveValues();
 
