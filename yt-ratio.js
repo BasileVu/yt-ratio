@@ -230,7 +230,9 @@
 
     function buildList(container, ranking) {
         let title = document.createElement("h2");
-        title.style.padding = "0 15px";
+        title.style.borderTop = "1px solid #e2e2e2";
+        title.style.margin = "7px 15px 0px";
+        title.style.padding = "7px 15px 5px";
         title.appendChild(document.createTextNode(ranking.lower.toLocaleString() + " - " + ranking.upper.toLocaleString() + " views"));
         container.append(title);
 
