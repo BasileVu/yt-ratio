@@ -6,6 +6,7 @@
 // @author       Flagoul
 // @match        https://www.youtube.com/*
 // @grant        GM_addStyle
+
 // ==/UserScript==
 
 (function() {
@@ -14,7 +15,29 @@
     const LS_KEY = "us-yt-ratio";
     const RANKING_LOWEST_VIEW_COUNT = 100; // the smallest view count possible for a video to be the first ranking
     const RANKING_STEP = 10; // the step (as a factor) between each ranking
-    const RANKING_MAX_VIDEOS = 10; // the step (as a factor) between each ranking
+    const RANKING_MAX_VIDEOS = 50; // the step (as a factor) between each ranking
+
+
+    //GM_addStyle(GM_getResourceText ("bootstrapCss"));
+
+
+    function getCoords(e) {
+        let box = e.getBoundingClientRect();
+
+        let body = document.body;
+        let de = document.documentElement;
+
+        let scrollTop = window.pageYOffset || de.scrollTop || body.scrollTop;
+        let scrollLeft = window.pageXOffset || de.scrollLeft || body.scrollLeft;
+
+        let clientTop = de.clientTop || body.clientTop || 0;
+        let clientLeft = de.clientLeft || body.clientLeft || 0;
+
+        return {
+            "top": Math.round(box.top +  scrollTop - clientTop),
+            "left": Math.round(box.left + scrollLeft - clientLeft)
+        };
+    }
 
     /**
     * Retrieves values related to current video and stores them in an object, that contains:
@@ -54,11 +77,12 @@
     }
 
     /**
-    * Displays the ratio of likes / dislikes of the video.
+    * Displays the ratio of likes / dislikes of the video. Adds an icon that allows displaying rankings on click.
     *
     * @param {Number} ratio - The ratio of likes / dislikes.
+    * @param {Object} rankings - The rankings computed (@see {@link computeRankings}).
     */
-    function displayRatio(ratio) {
+    function displayRatio(ratio, rankings) {
         GM_addStyle(`
             .ratio-icon:before {
                 margin-right: 4px !important;
@@ -73,8 +97,11 @@
 
         let button = document.createElement("button");
         button.classList.add("yt-uix-button", "yt-uix-button-opacity", "yt-ui-menu-item", "has-icon", "action-panel-trigger-stats", "ratio-icon");
-        button.appendChild(ratioValue);
         button.style.width = "inherit";
+        button.onclick = function (e) {
+            displayRankings(rankings, button);
+        };
+        button.appendChild(ratioValue);
 
         let ratioSpan = document.createElement("span");
         ratioSpan.appendChild(button);
@@ -109,12 +136,12 @@
 
             // if the ranking is too big, truncate it and delete all low-ranked videos records
             let ranking = rankings[i];
-            if (ranking.length > maxPerRanking) {
-                let toDelete = ranking.slice(maxPerRanking);
+            if (ranking.values.length > maxPerRanking) {
+                let toDelete = ranking.values.slice(maxPerRanking);
                 for (let j = 0; j < toDelete.length; ++j) {
                     delete records[toDelete[j].id];
                 }
-                rankings[i] = ranking.slice(0, maxPerRanking);
+                rankings[i].values = ranking.values.slice(0, maxPerRanking);
             }
         }
 
@@ -149,11 +176,11 @@
                         upper = lower * step;
 
                         if (rankingNumber >= rankings.length) {
-                            rankings.push([]);
+                            rankings.push({"lower": lower, "upper": upper, "values": []});
                         }
 
                         if (record.viewCount >= lower && record.viewCount < upper) {
-                            rankings[rankingNumber].push(record);
+                            rankings[rankingNumber].values.push(record);
                             rankingFound = true;
                         }
                     }
@@ -162,7 +189,7 @@
         }
 
         for (let i = 0; i < rankings.length; ++i) {
-            rankings[i].sort(function (a, b) {
+            rankings[i].values.sort(function (a, b) {
                 return b.ratio - a.ratio;
             });
         }
@@ -170,8 +197,83 @@
         return rankings;
     }
 
-    function displayRankings() {
-        // TODO
+    function displayRankings(rankings, button) {
+        let availableRect = document.querySelector("#watch-headline-title").getBoundingClientRect();
+        let width = availableRect.right - availableRect.left;
+        let height = 500;
+
+        let coords = getCoords(button);
+        let rect = button.getBoundingClientRect();
+        let buttonWidth = rect.right - rect.left;
+
+        let rankingsContainer = document.createElement("div");
+        rankingsContainer.classList.add("yt-uix-menu-content", "yt-ui-menu-content", "yt-uix-kbd-nav");
+        rankingsContainer.role = "menu";
+        rankingsContainer.style.width = width + "px";
+        rankingsContainer.style.height = height + "px";
+        rankingsContainer.style.overflow = "scroll";
+
+        rankingsContainer.style.left = (coords.left + buttonWidth - width) + "px";
+        rankingsContainer.style.top = (coords.top + 30) + "px";
+        rankingsContainer.ariaExpanded = "true";
+        rankingsContainer.dataKbddNavMoveOut="action-panel-overflow-button";
+
+        for (let i = 0; i < rankings.length; ++i) {
+          buildList(rankingsContainer, rankings[i]);
+        }
+
+        document.addEventListener("click", function(e) {
+            if (!rankingsContainer.contains(e.target) && !button.contains(e.target)) {
+                console.log("not inside");
+                rankingsContainer.remove();
+            }
+        });
+
+        document.querySelector("body").append(rankingsContainer);
+    }
+
+    function buildList(container, ranking) {
+        let title = document.createElement("h2");
+        title.style.padding = "0 15px";
+        title.appendChild(document.createTextNode(ranking.lower + " - " + ranking.upper));
+        container.append(title);
+
+        let ul = document.createElement("ul");
+        ul.classList.add("yt-uix-kbd-nav", "yt-uix-kbd-nav-list");
+
+        for (let i = 0; i < ranking.values.length; ++i) {
+            let values = ranking.values[i];
+
+            let li = document.createElement("li");
+            let a = document.createElement("a");
+            a.href = "https://www.youtube.com/watch?v=" + values.id;
+            a.classList.add("yt-ui-menu-item");
+
+            let place = document.createElement("span");
+            place.style.width = "20px";
+            place.style.marginRight = "10px";
+            place.style.display = "inline-block";
+            place.style.textAlign = "right";
+            place.appendChild(document.createTextNode(i + 1));
+            a.append(place);
+
+            let ratio = document.createElement("span");
+            ratio.style.width = "40px";
+            ratio.style.marginRight = "10px";
+            ratio.style.display = "inline-block";
+            ratio.style.textAlign = "right";
+            ratio.appendChild(document.createTextNode(values.ratio.toFixed(2)));
+            a.append(ratio);
+
+            let label = document.createElement("span");
+            label.appendChild(document.createTextNode(values.title));
+            label.classList.add("yt-ui-menu-item-label");
+            a.append(label);
+
+            li.append(a);
+            ul.append(li);
+        }
+        container.append(ul);
     }
 
     function doVideoRelatedActions() {
@@ -179,8 +281,8 @@
 
         // the video is worth registering (has likes and dislikes)
         if (values !== null) {
-            displayRatio(values.ratio);
             let rankings = saveValuesAndComputeRankings(values, RANKING_MAX_VIDEOS);
+            displayRatio(values.ratio, rankings);
 
             console.log("Rankings:");
             let lower = RANKING_LOWEST_VIEW_COUNT;
