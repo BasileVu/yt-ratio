@@ -18,9 +18,6 @@
     const RANKING_MAX_VIDEOS = 50; // the step (as a factor) between each ranking
 
 
-    //GM_addStyle(GM_getResourceText ("bootstrapCss"));
-
-
     function getCoords(e) {
         let box = e.getBoundingClientRect();
 
@@ -224,7 +221,6 @@
 
         document.addEventListener("click", function(e) {
             if (!rankingsContainer.contains(e.target) && !button.contains(e.target)) {
-                console.log("not inside");
                 rankingsContainer.remove();
             }
         });
@@ -235,7 +231,7 @@
     function buildList(container, ranking) {
         let title = document.createElement("h2");
         title.style.padding = "0 15px";
-        title.appendChild(document.createTextNode(ranking.lower + " - " + ranking.upper));
+        title.appendChild(document.createTextNode(ranking.lower.toLocaleString() + " - " + ranking.upper.toLocaleString() + " views"));
         container.append(title);
 
         let ul = document.createElement("ul");
@@ -283,15 +279,6 @@
         if (values !== null) {
             let rankings = saveValuesAndComputeRankings(values, RANKING_MAX_VIDEOS);
             displayRatio(values.ratio, rankings);
-
-            console.log("Rankings:");
-            let lower = RANKING_LOWEST_VIEW_COUNT;
-            let upper = RANKING_LOWEST_VIEW_COUNT;
-            for (let i = 0; i < rankings.length; ++i) {
-                lower = upper;
-                upper = lower * RANKING_STEP;
-                console.log("from", lower, "to", upper, ":", rankings[i]);
-            }
         }
     }
 
