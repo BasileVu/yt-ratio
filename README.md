@@ -22,7 +22,7 @@ The script adds the following elements:
 
 - When the button is clicked, the rankings are shown. A click on an entry of the ranking opens the related video.
 
-![rankings](https://cloud.githubusercontent.com/assets/2306585/22619212/1f98bb8c-eaf0-11e6-9f28-a5e24fc56d7c.png)
+![rankings](https://cloud.githubusercontent.com/assets/2306585/22621387/c8d2c51c-eb22-11e6-881b-fefbf9af17de.png)
 
 ## Installation
 
