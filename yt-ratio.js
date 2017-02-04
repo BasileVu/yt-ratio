@@ -219,6 +219,12 @@
         rankingsContainer.ariaExpanded = "true";
         rankingsContainer.dataKbddNavMoveOut="action-panel-overflow-button";
 
+        let title = document.createElement("h1");
+        title.append(document.createTextNode("Rankings of likes / dislikes ratios grouped by view count"));
+        title.style.marginLeft = "15px";
+
+        rankingsContainer.append(title);
+
         for (let i = 0; i < rankings.length; ++i) {
           buildList(rankingsContainer, rankings[i]);
         }
@@ -240,8 +246,35 @@
         title.appendChild(document.createTextNode(ranking.lower.toLocaleString() + " - " + ranking.upper.toLocaleString() + " views"));
         container.append(title);
 
+        let headers = document.createElement("span");
+        headers.style.marginLeft = "15px";
+        headers.style.fontWeight = "500";
+
+        let posHeader = document.createElement("span");
+        posHeader.style.display = "inline-block";
+        posHeader.style.width = "20px";
+        posHeader.style.textAlign = "right";
+        posHeader.style.marginRight = "10px";
+        posHeader.append(document.createTextNode("#"));
+        headers.append(posHeader);
+
+        let ratioHeader = document.createElement("span");
+        ratioHeader.style.display = "inline-block";
+        ratioHeader.style.width = "40px";
+        ratioHeader.style.textAlign = "center";
+        ratioHeader.style.marginRight = "10px";
+        ratioHeader.append(document.createTextNode("ratio"));
+        headers.append(ratioHeader);
+
+        let titleHeader = document.createElement("span");
+        titleHeader.append(document.createTextNode("title"));
+        headers.append(titleHeader);
+
+        container.append(headers);
+
         let ul = document.createElement("ul");
         ul.classList.add("yt-uix-kbd-nav", "yt-uix-kbd-nav-list");
+        ul.style.marginTop = "3px";
 
         for (let i = 0; i < ranking.values.length; ++i) {
             let values = ranking.values[i];
