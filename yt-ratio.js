@@ -55,7 +55,7 @@
             return null;
         }
 
-        let id = document.location.href.match(".*?v=([^&]*)")[1];
+        let id = document.location.href.match(".*?v=([A-Za-z0-9_\-]{11})")[1];
         let title = document.querySelector("#eow-title").title;
 
         let viewCount = parseInt(document.querySelector(".watch-view-count").textContent.split(/[\s,.]+/).slice(0, -1).join(""));
@@ -69,7 +69,7 @@
             "viewCount": viewCount,
             "likes": likes,
             "dislikes": dislikes,
-            "ratio": likes/dislikes
+            "ratio": dislikes !== 0 ? likes/dislikes : likes
         };
     }
 
@@ -173,7 +173,11 @@
                         upper = lower * step;
 
                         if (rankingNumber >= rankings.length) {
-                            rankings.push({"lower": lower, "upper": upper, "values": []});
+                            rankings.push({
+                                "lower": lower,
+                                "upper": upper,
+                                "values": []
+                            });
                         }
 
                         if (record.viewCount >= lower && record.viewCount < upper) {
