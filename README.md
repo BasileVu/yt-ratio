@@ -17,9 +17,11 @@ concerning videos with a smaller view count.
 The script adds the following elements:
 
 - When a video has likes and dislikes shown, the ratio is displayed and a new button is added.
+
 ![ratio](https://cloud.githubusercontent.com/assets/2306585/22619215/4091ea66-eaf0-11e6-8377-5b29ba1e5da9.png)
 
 - When the button is clicked, the rankings are shown. A click on an entry of the ranking opens the related video.
+
 ![rankings](https://cloud.githubusercontent.com/assets/2306585/22619212/1f98bb8c-eaf0-11e6-9f28-a5e24fc56d7c.png)
 
 # Installation
