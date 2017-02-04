@@ -15,8 +15,73 @@
     const LS_KEY = "us-yt-ratio";
     const RANKING_LOWEST_VIEW_COUNT = 100; // the smallest view count possible for a video to be the first ranking
     const RANKING_STEP = 10; // the step (as a factor) between each ranking
-    const RANKING_MAX_VIDEOS = 50; // the step (as a factor) between each ranking
+    const RANKING_MAX_VIDEOS = 10; // the step (as a factor) between each ranking
 
+    GM_addStyle(`
+        .ratio-icon {
+            width: inherit !important;
+        }
+
+        .ratio-icon:before {
+            margin-right: 4px !important;
+            opacity: 1 !important;
+            margin-bottom: 3px !important;
+        }
+
+        #rankings-container {
+            overflow-x: hidden;
+            overflow-y: scroll;
+            height: 500px;
+        }
+
+        #rankings-container h1 {
+            margin-left: 15px;
+        }
+
+        #rankings-container h2 {
+            border-top: 1px solid #e2e2e2;
+            margin: 7px 15px 0px;
+            padding: 7px 15px 5px;
+        }
+
+        #rankings-container .headers {
+            margin-left: 15px;
+            font-weight: 500;
+        }
+
+        #rankings-container .headers span {
+            display: inline-block;
+            margin-right: 10px;
+        }
+
+        #rankings-container .header-position {
+            width: 20px;
+            text-align: right;
+        }
+
+        #rankings-container .header-ratio {
+            width: 40px;
+            text-align: center;
+        }
+
+        #rankings-container ul {
+            margin-top: 3px;
+        }
+
+        #rankings-container ul span {
+            margin-right: 10px;
+            display: inline-block;
+            text-align: right;
+        }
+
+        #rankings-container .list-position {
+            width: 20px;
+        }
+
+        #rankings-container .list-ratio {
+            width: 40px;
+        }
+    `);
 
     /**
     * Retrieves the document-related coordinates (top and left) of an element.
@@ -86,21 +151,12 @@
     * @param {Object} rankings - The rankings computed (@see {@link computeRankings}).
     */
     function displayRatio(ratio, rankings) {
-        GM_addStyle(`
-            .ratio-icon:before {
-                margin-right: 4px !important;
-                opacity: 1 !important;
-                margin-bottom: 3px !important;
-            }
-        `);
-
         let ratioValue = document.createElement("span");
         ratioValue.classList.add("yt-uix-button-content");
         ratioValue.appendChild(document.createTextNode(ratio.toFixed(2)));
 
         let button = document.createElement("button");
         button.classList.add("yt-uix-button", "yt-uix-button-opacity", "yt-ui-menu-item", "has-icon", "action-panel-trigger-stats", "ratio-icon");
-        button.style.width = "inherit";
         button.onclick = function (e) {
             displayRankings(rankings, button);
         };
@@ -232,27 +288,20 @@
     function displayRankings(rankings, button) {
         let availableRect = document.querySelector("#watch-headline-title").getBoundingClientRect();
         let width = availableRect.right - availableRect.left;
-        let height = 500;
 
         let coords = getCoords(button);
         let rect = button.getBoundingClientRect();
         let buttonWidth = rect.right - rect.left;
 
         let rankingsContainer = document.createElement("div");
+        rankingsContainer.id = "rankings-container";
         rankingsContainer.classList.add("yt-uix-menu-content", "yt-ui-menu-content", "yt-uix-kbd-nav");
-        rankingsContainer.role = "menu";
         rankingsContainer.style.width = width + "px";
-        rankingsContainer.style.height = height + "px";
-        rankingsContainer.style.overflow = "scroll";
-
         rankingsContainer.style.left = (coords.left + buttonWidth - width) + "px";
         rankingsContainer.style.top = (coords.top + 30) + "px";
-        rankingsContainer.ariaExpanded = "true";
-        rankingsContainer.dataKbddNavMoveOut="action-panel-overflow-button";
 
         let title = document.createElement("h1");
         title.append(document.createTextNode("Rankings of likes / dislikes ratios grouped by view count"));
-        title.style.marginLeft = "15px";
 
         rankingsContainer.append(title);
 
@@ -277,29 +326,19 @@
     */
     function buildList(container, ranking) {
         let title = document.createElement("h2");
-        title.style.borderTop = "1px solid #e2e2e2";
-        title.style.margin = "7px 15px 0px";
-        title.style.padding = "7px 15px 5px";
         title.appendChild(document.createTextNode(ranking.lower.toLocaleString() + " - " + ranking.upper.toLocaleString() + " views"));
         container.append(title);
 
         let headers = document.createElement("span");
-        headers.style.marginLeft = "15px";
-        headers.style.fontWeight = "500";
+        headers.classList.add("headers");
 
         let posHeader = document.createElement("span");
-        posHeader.style.display = "inline-block";
-        posHeader.style.width = "20px";
-        posHeader.style.textAlign = "right";
-        posHeader.style.marginRight = "10px";
+        posHeader.classList.add("header-position");
         posHeader.append(document.createTextNode("#"));
         headers.append(posHeader);
 
         let ratioHeader = document.createElement("span");
-        ratioHeader.style.display = "inline-block";
-        ratioHeader.style.width = "40px";
-        ratioHeader.style.textAlign = "center";
-        ratioHeader.style.marginRight = "10px";
+        ratioHeader.classList.add("header-ratio");
         ratioHeader.append(document.createTextNode("ratio"));
         headers.append(ratioHeader);
 
@@ -311,7 +350,6 @@
 
         let ul = document.createElement("ul");
         ul.classList.add("yt-uix-kbd-nav", "yt-uix-kbd-nav-list");
-        ul.style.marginTop = "3px";
 
         for (let i = 0; i < ranking.values.length; ++i) {
             let values = ranking.values[i];
@@ -322,18 +360,12 @@
             a.classList.add("yt-ui-menu-item");
 
             let place = document.createElement("span");
-            place.style.width = "20px";
-            place.style.marginRight = "10px";
-            place.style.display = "inline-block";
-            place.style.textAlign = "right";
+            place.classList.add("list-position");
             place.appendChild(document.createTextNode(i + 1));
             a.append(place);
 
             let ratio = document.createElement("span");
-            ratio.style.width = "40px";
-            ratio.style.marginRight = "10px";
-            ratio.style.display = "inline-block";
-            ratio.style.textAlign = "right";
+            ratio.classList.add("list-ratio");
             ratio.appendChild(document.createTextNode(values.ratio.toFixed(2)));
             a.append(ratio);
 
