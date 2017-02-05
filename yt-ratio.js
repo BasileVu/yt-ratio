@@ -145,31 +145,6 @@
     }
 
     /**
-    * Displays the ratio of likes / dislikes of the video. Adds an icon that allows displaying rankings on click.
-    *
-    * @param {Number} ratio - The ratio of likes / dislikes.
-    * @param {Object} rankings - The rankings computed (@see {@link computeRankings}).
-    */
-    function displayRatio(ratio, rankings) {
-        let ratioValue = document.createElement("span");
-        ratioValue.classList.add("yt-uix-button-content");
-        ratioValue.appendChild(document.createTextNode(ratio.toFixed(2)));
-
-        let button = document.createElement("button");
-        button.classList.add("yt-uix-button", "yt-uix-button-opacity", "yt-ui-menu-item", "has-icon", "action-panel-trigger-stats", "ratio-icon");
-        button.onclick = function (e) {
-            displayRankings(rankings, button);
-        };
-        button.appendChild(ratioValue);
-
-        let ratioSpan = document.createElement("span");
-        ratioSpan.appendChild(button);
-        ratioSpan.setAttribute("title", "Ratio likes / dislikes");
-
-        document.querySelector(".like-button-renderer").appendChild(ratioSpan);
-    }
-
-    /**
     * Saves the values of the current video in the local storage and computes the ranking of the videos.
     *
     * Fetches the records in the local storage, adds the current video to it, computes rankings and then saves the records. During the computing, if a ranking has too many
@@ -280,6 +255,36 @@
     }
 
     /**
+    * Displays the ratio of likes / dislikes of the video. Adds an icon that allows displaying rankings on click.
+    *
+    * @param {Number} ratio - The ratio of likes / dislikes.
+    * @param {Object} rankings - The rankings computed (@see {@link computeRankings}).
+    */
+    function displayRatio(ratio, rankings) {
+        let ratioValue = document.createElement("span");
+        ratioValue.classList.add("yt-uix-button-content");
+        ratioValue.appendChild(document.createTextNode(ratio.toFixed(2)));
+
+        let button = document.createElement("button");
+        button.classList.add("yt-uix-button", "yt-uix-button-opacity", "yt-ui-menu-item", "has-icon", "action-panel-trigger-stats", "ratio-icon");
+        button.onclick = function (e) {
+            let rankingsContainer = document.querySelector("#rankings-container");
+            if (rankingsContainer === null) {
+                displayRankings(rankings, button);
+            } else {
+                rankingsContainer.remove();
+            }
+        };
+        button.appendChild(ratioValue);
+
+        let ratioSpan = document.createElement("span");
+        ratioSpan.appendChild(button);
+        ratioSpan.setAttribute("title", "Ratio likes / dislikes");
+
+        document.querySelector(".like-button-renderer").appendChild(ratioSpan);
+    }
+
+    /**
     * Displays the rankings generated on button click.
     *
     * @param {Object} rankings - The rankings to display.
@@ -309,6 +314,7 @@
           buildList(rankingsContainer, rankings[i]);
         }
 
+        // remove rankings if click outside
         document.addEventListener("click", function(e) {
             if (!rankingsContainer.contains(e.target) && !button.contains(e.target)) {
                 rankingsContainer.remove();
