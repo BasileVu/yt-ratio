@@ -399,7 +399,8 @@
     }
 
     /**
-    * Actions to do when a video is loaded. The actions will be executed only of the videohas likes and dislikes displayed.
+    * Actions related to video: retrieving values, building rankings and displaying ratio. The actions will be executed only of the videohas likes and dislikes
+    * are available (displayed by the user that posted the video).
     */
     function doVideoRelatedActions() {
         let values = retrieveValues();
@@ -411,28 +412,35 @@
         }
     }
 
-    doVideoRelatedActions();
+    /**
+    * Actions to do on the loading of a video: setting up mutation observers and then doing video-related actions.
+    */
+    function init() {
+        // on DOM change, run video-related actions if a button has been clicked
+        let buttonObserver = new MutationObserver(function(mutations) {
+            let classChanged = false;
+            mutations.some(el => {
+                let isAttNameClass = el.attributeName === "class";
+                if (isAttNameClass) {
+                    doVideoRelatedActions();
+                }
+                return isAttNameClass;
+            });
+        });
+
+        // observe changes on native buttons
+        Array.from(document.querySelectorAll(".like-button-renderer > span button")).forEach(el => {
+            buttonObserver.observe(el, {
+                attributes: true
+            });
+        });
+
+        doVideoRelatedActions();
+    }
+
+    init();
 
     window.addEventListener("spfdone", function(e) {
-        doVideoRelatedActions();
-    });
-
-    // on DOM change, run video-related actions if a button has been clicked
-    let buttonObserver = new MutationObserver(function(mutations) {
-        let classChanged = false;
-        mutations.some(el => {
-            let isAttNameClass = el.attributeName === "class";
-            if (isAttNameClass) {
-                doVideoRelatedActions();
-            }
-            return isAttNameClass;
-        });
-    });
-
-    // observe changes on native buttons
-    Array.from(document.querySelectorAll(".like-button-renderer > span button:not(#ratio-button)")).forEach(el => {
-        buttonObserver.observe(el, {
-            attributes: true
-        });
+        init();
     });
 })();
