@@ -264,34 +264,36 @@
     * @param {Object} rankings - The rankings computed (@see {@link computeRankings}).
     */
     function displayRatio(ratio, rankings) {
-        let ratioValue = document.querySelector("#ratio-value");
+        let ratioButton = document.querySelector("#ratio-button");
 
-        if (ratioValue === null) {
-            let button = document.createElement("button");
-            button.id = "ratio-button";
-            button.classList.add("yt-uix-button", "yt-uix-button-opacity", "yt-ui-menu-item", "has-icon", "action-panel-trigger-stats");
-            button.onclick = function (e) {
-                let rankingsContainer = document.querySelector("#rankings-container");
-                if (rankingsContainer === null) {
-                    displayRankings(rankings, button);
-                } else {
-                    rankingsContainer.remove();
-                }
-            };
-
-            ratioValue = document.createElement("span");
-            ratioValue.id = "ratio-value";
-            ratioValue.classList.add("yt-uix-button-content");
-            button.appendChild(ratioValue);
-
-            let ratioSpan = document.createElement("span");
-            ratioSpan.appendChild(button);
-            ratioSpan.setAttribute("title", "Ratio likes / dislikes");
-
-            document.querySelector(".like-button-renderer").appendChild(ratioSpan);
+        if (ratioButton !== null) {
+            ratioButton.remove();
         }
 
-        ratioValue.innerHTML = ratio.toFixed(2);
+        ratioButton = document.createElement("button");
+        ratioButton.id = "ratio-button";
+        ratioButton.classList.add("yt-uix-button", "yt-uix-button-opacity", "yt-ui-menu-item", "has-icon", "action-panel-trigger-stats");
+
+        let ratioValue = document.createElement("span");
+        ratioValue.id = "ratio-value";
+        ratioValue.classList.add("yt-uix-button-content");
+        ratioValue.appendChild(document.createTextNode(ratio.toFixed(2)));
+        ratioButton.appendChild(ratioValue);
+
+        let ratioSpan = document.createElement("span");
+        ratioSpan.appendChild(ratioButton);
+        ratioSpan.setAttribute("title", "Ratio likes / dislikes");
+
+        document.querySelector(".like-button-renderer").appendChild(ratioSpan);
+
+        ratioButton.onclick = function(e) {
+            let rankingsContainer = document.querySelector("#rankings-container");
+            if (rankingsContainer === null) {
+                displayRankings(rankings, ratioButton);
+            } else {
+                rankingsContainer.remove();
+            }
+        };
     }
 
     /**
