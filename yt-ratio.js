@@ -18,11 +18,11 @@
     const RANKING_MAX_VIDEOS = 10; // the step (as a factor) between each ranking
 
     GM_addStyle(`
-        .ratio-icon {
+        #ratio-button {
             width: inherit !important;
         }
 
-        .ratio-icon:before {
+        #ratio-button:before {
             margin-right: 4px !important;
             opacity: 1 !important;
             margin-bottom: 3px !important;
@@ -119,10 +119,10 @@
     * @return {Object} An object as described above. null if the video contains no likes / dislikes.
     */
     function retrieveValues() {
-        let values = document.querySelectorAll(".like-button-renderer > span:nth-of-type(odd) button span");
+        let buttons = document.querySelectorAll(".like-button-renderer > span button");
 
         // no likes / dislikes
-        if (values.length === 0) {
+        if (buttons.length === 0) {
             return null;
         }
 
@@ -131,8 +131,11 @@
 
         let viewCount = parseInt(document.querySelector(".watch-view-count").textContent.split(/[\s,.]+/).slice(0, -1).join(""));
 
-        let likes = parseInt(values[0].textContent.replace(/[\s,.]+/g, ""));
-        let dislikes = parseInt(values[1].textContent.replace(/[\s,.]+/g, ""));
+        let likesButton = buttons[0].classList.contains("hid") ? buttons[1] : buttons[0];
+        let dislikesButton = buttons[2].classList.contains("hid") ? buttons[3] : buttons[2];
+
+        let likes = parseInt(likesButton.textContent.replace(/[\s,.]+/g, ""));
+        let dislikes = parseInt(dislikesButton.textContent.replace(/[\s,.]+/g, ""));
 
         return {
             "id": id,
@@ -261,27 +264,34 @@
     * @param {Object} rankings - The rankings computed (@see {@link computeRankings}).
     */
     function displayRatio(ratio, rankings) {
-        let ratioValue = document.createElement("span");
-        ratioValue.classList.add("yt-uix-button-content");
-        ratioValue.appendChild(document.createTextNode(ratio.toFixed(2)));
+        let ratioValue = document.querySelector("#ratio-value");
 
-        let button = document.createElement("button");
-        button.classList.add("yt-uix-button", "yt-uix-button-opacity", "yt-ui-menu-item", "has-icon", "action-panel-trigger-stats", "ratio-icon");
-        button.onclick = function (e) {
-            let rankingsContainer = document.querySelector("#rankings-container");
-            if (rankingsContainer === null) {
-                displayRankings(rankings, button);
-            } else {
-                rankingsContainer.remove();
-            }
-        };
-        button.appendChild(ratioValue);
+        if (ratioValue === null) {
+            let button = document.createElement("button");
+            button.id = "ratio-button";
+            button.classList.add("yt-uix-button", "yt-uix-button-opacity", "yt-ui-menu-item", "has-icon", "action-panel-trigger-stats");
+            button.onclick = function (e) {
+                let rankingsContainer = document.querySelector("#rankings-container");
+                if (rankingsContainer === null) {
+                    displayRankings(rankings, button);
+                } else {
+                    rankingsContainer.remove();
+                }
+            };
 
-        let ratioSpan = document.createElement("span");
-        ratioSpan.appendChild(button);
-        ratioSpan.setAttribute("title", "Ratio likes / dislikes");
+            ratioValue = document.createElement("span");
+            ratioValue.id = "ratio-value";
+            ratioValue.classList.add("yt-uix-button-content");
+            button.appendChild(ratioValue);
 
-        document.querySelector(".like-button-renderer").appendChild(ratioSpan);
+            let ratioSpan = document.createElement("span");
+            ratioSpan.appendChild(button);
+            ratioSpan.setAttribute("title", "Ratio likes / dislikes");
+
+            document.querySelector(".like-button-renderer").appendChild(ratioSpan);
+        }
+
+        ratioValue.innerHTML = ratio.toFixed(2);
     }
 
     /**
@@ -403,5 +413,24 @@
 
     window.addEventListener("spfdone", function(e) {
         doVideoRelatedActions();
+    });
+
+    // on DOM change, run video-related actions if a button has been clicked
+    let buttonObserver = new MutationObserver(function(mutations) {
+        let classChanged = false;
+        mutations.some(el => {
+            let isAttNameClass = el.attributeName === "class";
+            if (isAttNameClass) {
+                doVideoRelatedActions();
+            }
+            return isAttNameClass;
+        });
+    });
+
+    // observe changes on native buttons
+    Array.from(document.querySelectorAll(".like-button-renderer > span button:not(#ratio-button)")).forEach(el => {
+        buttonObserver.observe(el, {
+            attributes: true
+        });
     });
 })();
