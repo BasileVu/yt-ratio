@@ -121,8 +121,19 @@
     function retrieveValues() {
         let buttons = document.querySelectorAll(".like-button-renderer > span button");
 
-        // no likes / dislikes
+        // deleted video / not on a video
         if (buttons.length === 0) {
+            return null;
+        }
+
+        let likesButton = buttons[0].classList.contains("hid") ? buttons[1] : buttons[0];
+        let dislikesButton = buttons[2].classList.contains("hid") ? buttons[3] : buttons[2];
+
+        let likes = parseInt(likesButton.textContent.replace(/[\s,.]+/g, ""));
+        let dislikes = parseInt(dislikesButton.textContent.replace(/[\s,.]+/g, ""));
+
+        // no likes / dislikes displayed
+        if (isNaN(likes) || isNaN(dislikes) === 0) {
             return null;
         }
 
@@ -131,11 +142,10 @@
 
         let viewCount = parseInt(document.querySelector(".watch-view-count").textContent.split(/[\s,.]+/).slice(0, -1).join(""));
 
-        let likesButton = buttons[0].classList.contains("hid") ? buttons[1] : buttons[0];
-        let dislikesButton = buttons[2].classList.contains("hid") ? buttons[3] : buttons[2];
-
-        let likes = parseInt(likesButton.textContent.replace(/[\s,.]+/g, ""));
-        let dislikes = parseInt(dislikesButton.textContent.replace(/[\s,.]+/g, ""));
+        // invalid view count
+        if (isNaN(viewCount)) {
+            return null;
+        }
 
         return {
             "id": id,
