@@ -7,7 +7,7 @@ After this, rankings based on the view count and ratio are updated and are brows
 
 The rankings are separated accordingly to the number of views of a video, since it would make little sense to compare
 a video with a big ratio but only something like 500 views and another video with a smaller ratio but more than a 
-million views. In that way, the ranking of "popular" videos with a big view count are often more insteresting that those
+million views. In that way, the ranking of "popular" videos with a big view count are often more interesting that those
 concerning videos with a smaller view count.
 
 *Warning: if you intend to use this script, keep in mind that this project was done mostly for fun, does not support all languages on youtube (doesn't work with japanese / vietnamese display for example) and may not be up to date with the changes done on Youtube's part.*
